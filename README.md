@@ -1,2 +1,2 @@
 # gopack
-a simplified webpack bundler written in golang
+a  webpack-like module bundler written in golang
