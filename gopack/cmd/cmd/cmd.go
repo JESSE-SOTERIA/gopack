@@ -3,28 +3,27 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"path/filepath"
 	"strings"
 )
 
-func NewRootCommand() cobra.Command {
+var( EntryFiles []string
+     OutputPath string
+)
 
-	RootCommand := cobra.Command{
+
+     var RootCommand = &cobra.Command{
 		Use:   "bundle",
 		Short: "start bundling your files",
-		Long:  "this command starts the bundling process of your project starting from the file you provided as an entry point and the bundled result is stored in the output path withuut modifying the original project so you can use either.",
+		Long:  "gopack bundles your javascript projects for better performance of you application",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("root command is running!")
-			//functionality for checking whether an argument is valid
-			if isValidArg(args[0]) && isValidArg(args[1]) {
-				fmt.Println("bundling in progress... please wait.....")
-			}
+			if validateFlags(EntryFiles, OutputPath){
+				fmt.Println("bundling was a success!!!")
+		}
 		},
-		Args: cobra.MinimumNArgs(2),
 	}
 
-	return RootCommand
 
-}
 
 func isValidArg(arg string) bool {
 	dotIndex := strings.LastIndex(arg, ".")
@@ -36,21 +35,41 @@ func isValidArg(arg string) bool {
 
 	switch extension {
 	case "js":
-		fmt.Println("File is a Javascript file")
 		return true
 	case "css":
-		fmt.Println("File is a css file")
 		return true
 	case "png":
-		fmt.Println("File is a png")
 		return true
 	case "jpg":
-		fmt.Println("File is a jpg")
 		return true
 	default:
-		fmt.Println("This is not a valid file for the bundler!")
 		return false
 
 	}
 
 }
+
+func validateFlags(entry []string, out string) bool{
+	//check the lengthof the entry slice
+	if len(entry) < 1{
+		fmt.Println("please enter an entry file and and output path to use the bundler")
+		return false
+		}
+
+		for i := 0; i < len(entry); i++ {
+		    if isValidArg(entry[i]) {
+				fmt.Printf("%s is a valid argument\n", entry[i])
+			} else {
+				fmt.Printf("[%s] is not a valid entry file\n", entry[i])
+			 }
+		}
+
+			if filepath.IsAbs(out) {
+				fmt.Println("bundling started successfully")
+				return true
+			} else {
+				filepath.Abs(out)
+				fmt.Println("converted to valid file path and bundling successfully!")
+				return true
+			}
+		}
