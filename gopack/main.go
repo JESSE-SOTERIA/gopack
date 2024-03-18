@@ -6,15 +6,12 @@ import (
 	"os"
 )
 
-
-
 var message string
 
-//look for a way to capture the entry points from te user and store them in the entryPoints variable
 //parse the entry points
 //make a dependency graph data structure
 //recursivelytraverse the dependency tree to identify all the imported modules
-//Add transformations to the modules transpiling ES6+ code to ES5 using Babel 
+//Add transformations to the modules transpiling ES6+ code to ES5 using Babel
 //implement loaders
 //optional: optimize code by tree shaking
 //concatenate the transformed code into one or more js files depending on the input
@@ -28,7 +25,6 @@ func main() {
 	//example: if the last arg is not a valid file path
 	//if one of the entry points is not a valid file
 
-
 	cmd.RootCommand.Flags().StringSliceVarP(&cmd.EntryFiles, "entry", "e", []string{}, "list of entry files")
 	cmd.RootCommand.Flags().StringVarP(&cmd.OutputPath, "output", "o", "", "output path for the bundle")
 
@@ -37,8 +33,7 @@ func main() {
 		fmt.Println("an error occured!")
 		os.Exit(1)
 	}
-
-//cmd.Entry files stores the entry file names of the project
+	//cmd.Entry files stores the entry file names of the project
 	//cmd.outputpath holds the path of the bundled output
 
 	//loop through the entry points and parse the files
