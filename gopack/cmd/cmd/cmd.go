@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	EntryFiles []string
-	OutputPath string
+	EntryFiles     []string
+	OutputPath     string
+	RootDependency string
 )
 
 var RootCommand = &cobra.Command{
@@ -36,6 +37,8 @@ func isValidArg(arg string) bool {
 		extension = arg[dotIndex+1:]
 	}
 
+	//the file formats that gopach supports
+	//more to be added with timett
 	switch extension {
 	case "js":
 		return true

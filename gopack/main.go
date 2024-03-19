@@ -27,6 +27,7 @@ func main() {
 
 	cmd.RootCommand.Flags().StringSliceVarP(&cmd.EntryFiles, "entry", "e", []string{}, "list of entry files")
 	cmd.RootCommand.Flags().StringVarP(&cmd.OutputPath, "output", "o", "", "output path for the bundle")
+	cmd.RootCommand.Flags().StringVarP(&cmd.RootDependency, "roodDep", "r", "", "root directory from where all your local dependencies can be reached")
 
 	//run bundle --help to see what the app does
 	if err := cmd.RootCommand.Execute(); err != nil {
