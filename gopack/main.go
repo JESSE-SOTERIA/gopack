@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
+	"github.com/JESSE-SOTERIA/gopack/parse"
 	"os"
 )
 
@@ -34,10 +35,10 @@ func main() {
 		fmt.Println("an error occured!")
 		os.Exit(1)
 	}
-	//cmd.Entry files stores the entry file names of the project
-	//cmd.outputpath holds the path of the bundled output
 
-	//loop through the entry points and parse the files
-	//write the parsing logic in its own package
-
+	var dependencyMap map[string][]string
+	for _, file := range cmd.EntryFiles {
+		dependencyMap[file], _ = parse.Parse(file)
+	}
+	fmt.Println(dependencyMap)
 }
