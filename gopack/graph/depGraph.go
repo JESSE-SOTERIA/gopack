@@ -22,24 +22,22 @@ type Node struct {
 
 // make sure you initialize each graph with an appropriate currentnode, maxnode, iterator value
 type Graph struct {
-	Vertices map[int64]Node
-	//node.name is the file names
+	Vertices      map[int64]Node
 	AdjacencyList map[Node][]Node
-	//fields below this comment used to implement the iterator interface in the graph package
-	//should be initialized to 0, valid numbers start from one, and zero denotes an empty adjacencylist
-	currentNode int
-	// should be initialized to the length of the adjacency list
-	maxNode int
+	NodeIterator  Nodes
 }
 
-type Iterator struct {
-	parentgraph *Graph
-	currentNode int64
-	maxNode     int
+type Edge struct {
+	from Node
+	to   Node
 }
 
+// this type and the iterator is based on the fact that node Id's will be assigned by a simple incrementing function say += 1 for the node id
+// after running the topological sort, ill get back a slice of sorted vertices. which ill use the index of as the id later which would mean the sort
 type Nodes struct {
-	*Iterator
+	parentGraph *Graph
+	currentNode int
+	maxNode     int
 }
 
 func (n *Node) ID() int64 {
@@ -60,43 +58,101 @@ func (g *Graph) Node(id int64) Node {
 	return defaultNode
 }
 
-//func (g *Graph) Nodes() Nodes{
-//initializes an iterator which points the graph to which this method belongs
-//initializes a value of type nodes with the pre initialized iterator
-//
-//}
+// is this a viable way to instantiate a graph??? or part of it???
+// maybe have a function makeNodeIterator that returns a node iterator like the function does below?
+func (g *Graph) Nodes() Nodes {
+	return Nodes{
+		parentGraph: g,
+		currentNode: 0,
+		maxNode:     len(g.Vertices),
+	}
+}
 
-func (i *Iterator) Next() bool {
-	if i.parentgraph.currentNode == i.parentgraph.maxNode {
+// the node doesnt exist or doesnt have any neighbours if the value of maxNode of the nodes returned is 0
+func (g *Graph) From(id int64) Nodes {
+	node, exists := g.Vertices[id]
+	if exists {
+		//neighbours is a list of nodes that border the id node that from is called with
+		neighbours, _ := g.AdjacencyList[node]
+		//return an iterator that iterates through a node slice
+		return Nodes{
+			parentGraph: g,
+			currentNode: 0,
+			maxNode:     len(neighbours),
+		}
+
+	}
+	//maxNode value of 0 means that the node is non existent
+	return Nodes{
+		parentGraph: g,
+		currentNode: 0,
+		maxNode:     0,
+	}
+
+}
+
+func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
+
+}
+
+func (g *Graph) Edge(uid, yid int64) Edge {
+
+}
+
+func (g *Graph) HasEdgeFromTo(uid, vid int64) bool {
+
+}
+
+func (g *Graph) To(id int64) Nodes {
+
+}
+
+//THE FOLLOWING IMPLEMENT THE ITERATOR INTERFACE
+//the iterator should be a generic type that iterates over a certain item
+//code the methods such that it could iterate throug graph.vertices and []node graph.adjacencylist
+
+func (n *Nodes) Next() bool {
+	if n.currentNode == n.maxNode {
 		return false
 	}
-	i.parentgraph.currentNode += 1
-	if i.parentgraph.currentNode == i.parentgraph.maxNode {
-		return false
-	}
-
+	n.currentNode++
 	return true
 }
-func (i *Iterator) Len() int {
-	return len(i.parentgraph.AdjacencyList) - i.parentgraph.currentNode
+
+// determines which nodes the iterator iterates
+func (n *Nodes) Len() int {
+	//maxNode should be set depending on the item being iterated on
+	return n.maxNode - n.currentNode
 }
 
-func (i *Iterator) Reset() {
-	i.parentgraph.currentNode -= len(i.parentgraph.AdjacencyList)
-	if i.parentgraph.currentNode <= 0 {
-		i.parentgraph.currentNode = 0
-	}
+func (n *Nodes) Reset() {
+	n.currentNode = 0
 }
 
 func (n *Nodes) Node() Node {
-	currentNode := n.Iterator.currentNode
+	currentNode := int64(n.currentNode)
 	var defaultNode = Node{
 		Name: "default",
 		Id:   -1,
 	}
-	node, exists := n.Iterator.parentgraph.Vertices[currentNode]
+	node, exists := n.parentGraph.Vertices[currentNode]
+
 	if exists {
 		return node
 	}
 	return defaultNode
+}
+func (e *Edge) ReversedEdge() Edge {
+
+}
+func (e *Edge) From() Node {
+
+}
+
+func (e *Edge) To() Node {
+
+}
+
+func InitializeGraph() Graph {
+
 }
