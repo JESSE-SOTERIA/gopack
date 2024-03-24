@@ -22,14 +22,15 @@ type Node struct {
 
 // make sure you initialize each graph with an appropriate currentnode, maxnode, iterator value
 type Graph struct {
+	Edges         []Edge
 	Vertices      map[int64]Node
 	AdjacencyList map[Node][]Node
 	NodeIterator  Nodes
 }
 
 type Edge struct {
-	from Node
-	to   Node
+	FromId int64
+	ToId   int64
 }
 
 // this type and the iterator is based on the fact that node Id's will be assigned by a simple incrementing function say += 1 for the node id
@@ -92,18 +93,65 @@ func (g *Graph) From(id int64) Nodes {
 }
 
 func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
-
+	from, exists := g.Vertices[xid]
+	if exists {
+		//handle the case where if from node doesn't exist
+		neighbours, exists := g.AdjacencyList[from]
+		if len(neighbours) > 0 {
+			for neighbour := 0; neighbour < len(neighbours); neighbour++ {
+				if neighbours[neighbour].Id == yid {
+					return true
+				}
+			}
+			return false
+		}
+		return false
+	}
+	return false
 }
 
+// returns edge with values of -1 for all fields if the vertices do not exist
 func (g *Graph) Edge(uid, yid int64) Edge {
+	node, exists := g.Vertices[uid]
+	node2, exists2 := g.Vertices[yid]
 
+	if exists && exists2 {
+		return g.NewEdge(node, node2)
+	}
+	return Edge{
+		FromId: -1,
+		ToId:   -1,
+	}
 }
 
 func (g *Graph) HasEdgeFromTo(uid, vid int64) bool {
+	for i := 0; i < len(g.Edges); i++ {
+		if g.Edges[i].FromId == uid && g.Edges[i].ToId == vid {
+			return true
+		}
+	}
+	return false
 
 }
 
 func (g *Graph) To(id int64) Nodes {
+	for _, list := range g.AdjacencyList {
+		for i := 0; i < len(list); i++ {
+			if list[i].Id == id {
+				return Nodes{
+					parentGraph: g,
+					currentNode: 0,
+					maxNode:     0,
+				} //it exists
+			}
+		}
+	}
+	//it doesn't
+	return Nodes{
+		parentGraph: nil,
+		currentNode: -1,
+		maxNode:     -1,
+	}
 
 }
 
@@ -142,17 +190,65 @@ func (n *Nodes) Node() Node {
 	}
 	return defaultNode
 }
+
+// the following methods implement the Edge interface
 func (e *Edge) ReversedEdge() Edge {
+	var reversedEdge Edge
+	reversedEdge.FromId = e.ToId
+	reversedEdge.ToId = e.FromId
 
+	return reversedEdge
 }
+
+// node is a newNode with a similar id : should be handled properly
 func (e *Edge) From() Node {
-
+	var newNode Node
+	newNode.Id = e.FromId
+	return newNode
 }
 
+// node is a newNode with a similar Id : should be handled appropriately
 func (e *Edge) To() Node {
-
+	var newNode Node
+	newNode.Id = e.ToId
+	return newNode
 }
 
 func InitializeGraph() Graph {
 
+}
+
+//the next methods implement the EdgeAdder interface
+
+// the NewEdge method adds an edge to the graph and then returns that edge for processing
+func (g *Graph) NewEdge(from, to Node) Edge {
+	var newEdge Edge
+
+	newEdge.FromId = from.Id
+	newEdge.ToId = to.Id
+	g.Edges = append(g.Edges, newEdge)
+	//UPDATE THE ADJACENCY LIST
+
+	return newEdge
+}
+
+// adds an edge to the edges slice in the graph
+func (g *Graph) SetEdge(e Edge) {
+	g.Edges = append(g.Edges, e)
+
+}
+
+// the following implement a NodeAdder interface
+// makes a new node with an arbitrary id
+func (g *Graph) NewNode() Node {
+	var newNode Node
+	newNode.Name = ""
+	//(-1) id means its a default node
+	newNode.Id = -1
+	return newNode
+}
+
+// vertices field of the graph type is a map that maps a node id to a single node in the map
+func (g *Graph) AddNode(vertice Node) {
+	g.Vertices[vertice.Id] = vertice
 }
