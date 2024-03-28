@@ -56,7 +56,7 @@ func resolveDependency(dependencyName string) (string, error) {
 	})
 
 	if err != nil && err.Error() != "found" {
-		log.Fatal(err)
+		return "", err
 	}
 
 	if foundPath == "" {
@@ -76,7 +76,7 @@ func Parse(file string) ([]string, error) {
 	var parsedStrings []string
 	buf, err := os.Open(file)
 	if err != nil {
-		return []string{}, errors.New("failed to open file")
+		return []string{}, err
 	}
 
 	defer buf.Close()
@@ -89,7 +89,7 @@ func Parse(file string) ([]string, error) {
 		}
 		resolved, err := resolveDependency(dependencyName)
 		if err != nil {
-			return []string{}, errors.New("could not resolve dependency")
+			return []string{}, err
 		}
 		parsedStrings = append(parsedStrings, resolved)
 	}

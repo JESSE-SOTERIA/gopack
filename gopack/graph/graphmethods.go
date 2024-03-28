@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// refactor and test
 func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
 	from, exists := g.Vertices[xid]
 	if exists {

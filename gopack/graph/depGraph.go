@@ -50,6 +50,7 @@ func (g *Graph) Nodes() Nodes {
 	}
 }
 
+// complete, test
 func InitializeGraph() Graph {
 
 }

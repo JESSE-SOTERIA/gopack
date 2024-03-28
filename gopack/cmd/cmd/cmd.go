@@ -4,22 +4,24 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/fs"
-	"log"
 	//"os"
+	"errors"
+	"log"
 	"path/filepath"
 	"strings"
 )
 
 var (
-	EntryFiles     []string
-	OutputPath     string
+	EntryFiles []string
+	OutputPath string
+	//the root file from where the dependencies should be traced
 	RootDependency string
 )
 
 var RootCommand = &cobra.Command{
 	Use:   "bundle",
 	Short: "start bundling your files",
-	Long:  "gopack bundles your javascript projects for better performance of you application",
+	Long:  "gopack bundles your javascript projects for better performance of your web application",
 	Run: func(cmd *cobra.Command, args []string) {
 		//check if the entry files and outputpath strings are of the required format
 		//append output path to the current working directory if it's not an absolute path
@@ -64,7 +66,7 @@ func validateFlags(entry []string, out string) bool {
 
 	for i := 0; i < len(entry); i++ {
 		if isValidArg(entry[i]) {
-			if fileExists(entry[i]) {
+			if fileExists(entry[i], ".") {
 				fmt.Printf("%s is a valid file\n", entry[i])
 			} else {
 				fmt.Printf("%s does not exist in the current directory\n", entry[i])
@@ -77,9 +79,19 @@ func validateFlags(entry []string, out string) bool {
 	}
 
 	if filepath.IsAbs(out) {
+		//output will be within the cwd, with the extension that is outputpath
+		//means that "/" is a valid filepath
 		fmt.Println("bundling started successfully")
 		return true
 	} else {
+		//check that the path is not a nonsensical text/ doesn't end with an extension eg .js
+		// 1. check if the output ends with an extension
+		valid := strings.LastIndex(out, ".")
+		if valid != -1 {
+			//replace with os formatted error
+			log.Fatal(errors.New("output path cannot be a file"))
+			//os.Exit(1)
+		}
 		absOutput, err := filepath.Abs(out)
 		if err != nil {
 			log.Fatal(err)
@@ -91,9 +103,10 @@ func validateFlags(entry []string, out string) bool {
 }
 
 // checks whether the file exists within the current directory
-func fileExists(fileName string) bool {
+// starting point is the directory level from where this checker will begin. the root of the file structure
+func fileExists(fileName, startingPoint string) bool {
 	var exists bool
-	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(startingPoint, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
