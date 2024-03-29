@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"fmt"
+	//"fmt"
 )
 
 // determines which nodes the iterator iterates

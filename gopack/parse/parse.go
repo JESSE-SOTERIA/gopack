@@ -39,6 +39,13 @@ func checkDependency(line string) (string, bool) {
 	return "", false
 }
 
+// implement own errror type for signaling the file has been found when resolving dependencies with the resolveDependency function
+type FoundError struct{}
+
+func (f *FoundError) Error() string {
+	return "found file"
+}
+
 // takes a string (dependency file name) checks whether it exists in the root dependency directory and returns the absolute path to that file,
 // or an error if that file does not exist
 func resolveDependency(dependencyName string) (string, error) {
@@ -46,16 +53,18 @@ func resolveDependency(dependencyName string) (string, error) {
 	var foundPath string
 	err := filepath.WalkDir(cmd.RootDependency, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			wrapped := fmt.Errorf("failed to walk the file path: %w", err)
+			return wrapped
 		}
 		if d.Name() == dependencyName {
 			foundPath = path
-			return errors.New("found") // stop the traversal
+			//signal that the file has been found
+			return &FoundError{}
 		}
 		return nil
 	})
 
-	if err != nil && err.Error() != "found" {
+	if err != nil && err.Error() != "found file" {
 		return "", err
 	}
 
@@ -65,7 +74,8 @@ func resolveDependency(dependencyName string) (string, error) {
 
 	absolutePath, err := filepath.Rel(cmd.RootDependency, foundPath)
 	if err != nil {
-		return "", err
+		wrapped := fmt.Errorf("cant make the filepath relative: %w", err)
+		return "", wrapped
 	}
 
 	return filepath.Join(cmd.RootDependency, absolutePath), nil
@@ -76,7 +86,8 @@ func Parse(file string) ([]string, error) {
 	var parsedStrings []string
 	buf, err := os.Open(file)
 	if err != nil {
-		return []string{}, err
+		wrapped := fmt.Errorf("failed to open %s: %w", err)
+		return []string{}, wrapped
 	}
 
 	defer buf.Close()

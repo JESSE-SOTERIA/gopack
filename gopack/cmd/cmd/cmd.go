@@ -1,14 +1,15 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/fs"
-	//"os"
-	"errors"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var (
@@ -17,6 +18,12 @@ var (
 	//the root file from where the dependencies should be traced
 	RootDependency string
 )
+
+//this package is to validate the entry files and output path
+
+//call stack
+//validateFlags
+//isFileExists
 
 var RootCommand = &cobra.Command{
 	Use:   "bundle",
@@ -31,6 +38,7 @@ var RootCommand = &cobra.Command{
 	},
 }
 
+// used this name because we are checking arguments to the  root command
 func isValidArg(arg string) bool {
 	dotIndex := strings.LastIndex(arg, ".")
 	var extension string
@@ -60,20 +68,20 @@ func isValidArg(arg string) bool {
 func validateFlags(entry []string, out string) bool {
 	//check the lengthof the entry slice
 	if len(entry) < 1 {
-		fmt.Println("please enter an entry file and and output path to use the bundler")
+		fmt.Println("please provide atleast one entry file")
 		return false
 	}
 
 	for i := 0; i < len(entry); i++ {
 		if isValidArg(entry[i]) {
 			if fileExists(entry[i], ".") {
-				fmt.Printf("%s is a valid file\n", entry[i])
+				continue
 			} else {
 				fmt.Printf("%s does not exist in the current directory\n", entry[i])
-				//uncomment the next line for intended functionality
-				//os.Exit(1)
+				os.Exit(1)
 			}
 		} else {
+			//should be an error
 			fmt.Printf("[%s] is not a valid file\n", entry[i])
 		}
 	}
@@ -90,7 +98,6 @@ func validateFlags(entry []string, out string) bool {
 		if valid != -1 {
 			//replace with os formatted error
 			log.Fatal(errors.New("output path cannot be a file"))
-			//os.Exit(1)
 		}
 		absOutput, err := filepath.Abs(out)
 		if err != nil {
@@ -105,19 +112,24 @@ func validateFlags(entry []string, out string) bool {
 // checks whether the file exists within the current directory
 // starting point is the directory level from where this checker will begin. the root of the file structure
 func fileExists(fileName, startingPoint string) bool {
+	var mu sync.Mutex
 	var exists bool
 	err := filepath.WalkDir(startingPoint, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
+		//check if the file exists in the current directory within the file path
 		if d.Name() == fileName {
+			mu.Lock()
 			exists = true
+			mu.Unlock()
 		}
 
 		return nil
 	})
 
 	if err != nil {
+		//log because of the return value
 		log.Fatal(err)
 		//end the task
 	}

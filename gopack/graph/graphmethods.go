@@ -96,8 +96,8 @@ func (g *Graph) NewNode() Node {
 }
 
 // vertices field of the graph type is a map that maps a node id to a single node in the map
-func (g *Graph) AddNode(vertice Node) {
-	g.Vertices[vertice.Id] = vertice
+func (g *Graph) AddNode(vertex Node) {
+	g.Vertices[vertex.Id] = vertex
 }
 
 // the node doesnt exist or doesnt have any neighbours if the value of maxNode of the nodes returned is 0

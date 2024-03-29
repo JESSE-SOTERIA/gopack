@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
-	"github.com/JESSE-SOTERIA/gopack/parse"
+	//"github.com/JESSE-SOTERIA/gopack/parse"
 	"os"
 )
 
@@ -36,9 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var dependencyMap map[string][]string
-	for _, file := range cmd.EntryFiles {
-		dependencyMap[file], _ = parse.Parse(file)
-	}
-	fmt.Println(dependencyMap)
+	//var dependencyMap map[string][]string
+	//add entries to the map by looping over the entry and parsing each file name
+
 }
