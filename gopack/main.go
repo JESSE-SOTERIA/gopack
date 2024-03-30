@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
-	//"github.com/JESSE-SOTERIA/gopack/parse"
+	"github.com/JESSE-SOTERIA/gopack/graph"
+	"github.com/JESSE-SOTERIA/gopack/parse"
+	"log"
 	"os"
 )
 
@@ -36,7 +38,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	//var dependencyMap map[string][]string
-	//add entries to the map by looping over the entry and parsing each file name
+	//this graph only has vertices and nodeIterator initialized
+	projectGraph := graph.InitializeGraph(cmd.EntryFiles)
 
+	//loop over the projectgraph and call Parse for each entry
+	for _, val := range projectGraph.Vertices {
+		list, err := parse.Parse(val.Name)
+		if err != nil {
+			//need to unwrap the error and handle it effectively
+			log.Fatal(err)
+		}
+
+	}
+	//call newNode on all list Elements to get a list of nodes
+	//use val as key and the node lista as a value to make the map that is projectGraph.adjaceccylist
+	//add edges to the graph depending on the list of dependencies on the adjacencyList
+	//call topo, then transitive reduction
 }

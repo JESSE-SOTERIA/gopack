@@ -28,7 +28,7 @@ var (
 var RootCommand = &cobra.Command{
 	Use:   "bundle",
 	Short: "start bundling your files",
-	Long:  "gopack bundles your javascript projects for better performance of your web application",
+	Long:  "gopack bundles your javascript projects for better performance of your web application you need to enter -e flag before each entry file for appropriate behaviour",
 	Run: func(cmd *cobra.Command, args []string) {
 		//check if the entry files and outputpath strings are of the required format
 		//append output path to the current working directory if it's not an absolute path

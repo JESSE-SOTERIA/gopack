@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"fmt"
+	//"fmt"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/iterator"
 	"gonum.org/v1/gonum/simple"
@@ -16,8 +16,9 @@ import (
 //implement the nodes method in the graph interface
 
 type Node struct {
-	Name string
-	Id   int64
+	graph *Graph
+	Name  string
+	Id    int64
 }
 
 // make sure you initialize each graph with an appropriate currentnode, maxnode, iterator value
@@ -29,6 +30,7 @@ type Graph struct {
 }
 
 type Edge struct {
+	graph  *Graph
 	FromId int64
 	ToId   int64
 }
@@ -41,6 +43,16 @@ type Nodes struct {
 	maxNode     int
 }
 
+type uniqueIdGenerator struct {
+	graph   *Graph
+	counter int64
+}
+
+func (u *uniqueIdGenerator) getId() int64 {
+	u.counter++
+	return u.counter
+}
+
 // maybe have a function makeNodeIterator that returns a node iterator like the function does below?
 func (g *Graph) Nodes() Nodes {
 	return Nodes{
@@ -51,6 +63,24 @@ func (g *Graph) Nodes() Nodes {
 }
 
 // complete, test
-func InitializeGraph() Graph {
+func InitializeGraph(list []string) Graph {
+	var (
+		newGraph Graph
+		idGen    uniqueIdGenerator
+		newIter  Nodes
+	)
 
+	//loop over the list
+	for i := 0; i < len(list); i++ {
+		newNode := Node{
+			graph: &newGraph,
+			Name:  list[i],
+			Id:    idGen.getId(),
+		}
+		newGraph.AddNode(newNode)
+	}
+	newGraph.NodeIterator, newIter.parentGraph = newIter, &newGraph
+
+	newIter.maxNode = len(newIter.parentGraph.Vertices)
+	return newGraph
 }
