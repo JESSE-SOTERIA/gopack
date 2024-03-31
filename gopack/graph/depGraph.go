@@ -26,6 +26,7 @@ type Graph struct {
 	Edges         []Edge
 	Vertices      map[int64]Node
 	AdjacencyList map[Node][]Node
+	IdGen         uniqueIdGenerator
 	NodeIterator  Nodes
 }
 
@@ -48,7 +49,7 @@ type uniqueIdGenerator struct {
 	counter int64
 }
 
-func (u *uniqueIdGenerator) getId() int64 {
+func (u *uniqueIdGenerator) GetId() int64 {
 	u.counter++
 	return u.counter
 }
@@ -66,7 +67,6 @@ func (g *Graph) Nodes() Nodes {
 func InitializeGraph(list []string) Graph {
 	var (
 		newGraph Graph
-		idGen    uniqueIdGenerator
 		newIter  Nodes
 	)
 
@@ -75,7 +75,7 @@ func InitializeGraph(list []string) Graph {
 		newNode := Node{
 			graph: &newGraph,
 			Name:  list[i],
-			Id:    idGen.getId(),
+			Id:    newGraph.IdGen.GetId(),
 		}
 		newGraph.AddNode(newNode)
 	}

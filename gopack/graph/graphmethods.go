@@ -1,15 +1,11 @@
 package graph
 
-import (
-	"fmt"
-)
-
 // refactor and test
 func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
 	from, exists := g.Vertices[xid]
 	if exists {
 		//handle the case where if from node doesn't exist
-		neighbours, exists := g.AdjacencyList[from]
+		neighbours, _ := g.AdjacencyList[from]
 		if len(neighbours) > 0 {
 			for neighbour := 0; neighbour < len(neighbours); neighbour++ {
 				if neighbours[neighbour].Id == yid {

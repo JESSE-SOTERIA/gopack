@@ -5,13 +5,13 @@ import (
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"github.com/JESSE-SOTERIA/gopack/graph"
 	"github.com/JESSE-SOTERIA/gopack/parse"
+	"gonum.org/v1/gonum/topo"
 	"log"
 	"os"
 )
 
 var message string
 
-//parse the entry points
 //make a dependency graph data structure
 //recursivelytraverse the dependency tree to identify all the imported modules
 //Add transformations to the modules transpiling ES6+ code to ES5 using Babel
@@ -24,7 +24,7 @@ var message string
 //optional: generatae the source maps to hep debugging by mapping the code in the bundle to the oroginal source code
 
 func main() {
-	//find a way to terminate if one of the conditions in the root command is not met
+	//find a way to terminate if onw of the conditions in the root command is not met
 	//example: if the last arg is not a valid file path
 	//if one of the entry points is not a valid file
 
@@ -41,7 +41,8 @@ func main() {
 	//this graph only has vertices and nodeIterator initialized
 	projectGraph := graph.InitializeGraph(cmd.EntryFiles)
 
-	//loop over the projectgraph and call Parse for each entry
+	//adds the Edges and the adjacencyList to the graph.
+	//graph is now complete
 	for _, val := range projectGraph.Vertices {
 		list, err := parse.Parse(val.Name)
 		if err != nil {
@@ -49,9 +50,22 @@ func main() {
 			log.Fatal(err)
 		}
 
+		var neighbourNodes []graph.Node
+		var newEdges []graph.Edge
+		for _, name := range list {
+			newNode := projectGraph.NewNode()
+			newNode.Name = name
+			newNode.Id = projectGraph.IdGen.GetId()
+			//make edge between each node and each neighbour
+			newEdges = append(newEdges, projectGraph.NewEdge(val, newNode))
+			neighbourNodes = append(neighbourNodes, newNode)
+		}
+		projectGraph.AdjacencyList[val] = neighbourNodes
+		projectGraph.Edges = newEdges
+
 	}
-	//call newNode on all list Elements to get a list of nodes
-	//use val as key and the node lista as a value to make the map that is projectGraph.adjaceccylist
-	//add edges to the graph depending on the list of dependencies on the adjacencyList
+
 	//call topo, then transitive reduction
+	topo.Sort(projectGraph)
+
 }
