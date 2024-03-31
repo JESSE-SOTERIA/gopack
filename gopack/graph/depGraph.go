@@ -1,13 +1,5 @@
 package graph
 
-import (
-	//"fmt"
-	"gonum.org/v1/gonum/graph"
-	"gonum.org/v1/gonum/iterator"
-	"gonum.org/v1/gonum/simple"
-	"gonum.org/v1/gonum/topo"
-)
-
 // implement graph, node, and edge, which are the building blocks of graphs
 // implement all the methods to these types that will be needed for the desired functionality
 // call the methods from the libraries.

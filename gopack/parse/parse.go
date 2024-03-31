@@ -2,13 +2,11 @@ package parse
 
 import (
 	"bufio"
-	"errors"
-	"filepath"
 	"fmt"
-	"fs"
-	"github.com/JESSE-SOTERIA/cmd/cmd"
-	"log"
+	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"os"
+	"path/filepath"
+	"path/kr/fs"
 	"strings"
 )
 

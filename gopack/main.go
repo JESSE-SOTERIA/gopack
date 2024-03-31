@@ -5,7 +5,7 @@ import (
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"github.com/JESSE-SOTERIA/gopack/graph"
 	"github.com/JESSE-SOTERIA/gopack/parse"
-	"gonum.org/v1/gonum/topo"
+	"gonum.org/v1/gonum/graph/topo"
 	"log"
 	"os"
 )

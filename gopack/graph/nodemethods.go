@@ -1,9 +1,5 @@
 package graph
 
-import (
-	//"fmt"
-)
-
 // determines which nodes the iterator iterates
 func (n *Nodes) Len() int {
 	//maxNode should be set depending on the item being iterated on
