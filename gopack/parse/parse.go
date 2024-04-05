@@ -3,36 +3,59 @@ package parse
 import (
 	"bufio"
 	"fmt"
+	"fs"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"os"
 	"path/filepath"
-	"path/kr/fs"
 	"strings"
 )
 
-//Parse function opens each file in the entry points slice and reads them line by line
-//check dependency function returns the file name of the module  imported by an import statement if it exists in the line its called with
-//resolvedependency func takes the import string and returns an absolute path to that file
-//resolved dependencies are appended to a slice which is then returned by the parse func
-
-//maybe make the returned slice a map that maps every dependency to a file(DEPENDENCY GRAPH)
-//we can have a package (dependency graph), and all its methods in a seperate package and import it here
-//add slices to that graph based on the computation of the parse func
-
-// checks for dependency statements in the line provided and returns the string in quotes from that line (the dependency)
-// the boolean will later be used in the logic for making the dependency graph to determine whether the added node is the last one ( leaf of a tree)
+// IMPORTANT: list of errors wrapped from this package:
+// 1.failed to look for file:
+// 2. failed to make the filepath relative:
+// 3. failed to open file for dependency resolution:
+// what if the file is an online asset?
 func checkDependency(line string) (string, bool) {
 
+	//checks the dependency of a file based on the import or require  string
 	if strings.Contains(line, "import") {
+		//checks if the line contains "
+		//TODO: add support for single quote imports
 		start := strings.Index(line, `"`)
 		if start == -1 {
 			return "", false
 		}
 		end := strings.Index(line[start+1:], `"`)
+		//make sure there is no syntax error
 		if end == -1 {
 			return "", false
 		}
 		return line[start+1 : start+1+end], true
+	}
+	if strings.Contains(line, "require()") {
+		//checks the contents of the requre
+		//handles both single and double quotes
+		start := strings.Index(line, `"`)
+		startSingle := strings.Index(line, `'`)
+		if start == -1 && startSingle == -1 {
+			return "", false
+		}
+		if start != -1 {
+			end := strings.Index(line[start+1:], `"`)
+			if end == -1 {
+				return "", false
+			} else {
+				return line[start+1 : start+1+end], true
+
+			}
+		} else {
+			endSingle := strings.Index(line[startSingle+1:], `'`)
+			if endSingle == -1 {
+				return "", false
+			} else {
+				return line[startSingle+1 : startSingle+1+endSingle], true
+			}
+		}
 	}
 	return "", false
 }
@@ -46,12 +69,15 @@ func (f *FoundError) Error() string {
 
 // takes a string (dependency file name) checks whether it exists in the root dependency directory and returns the absolute path to that file,
 // or an error if that file does not exist
-func resolveDependency(dependencyName string) (string, error) {
+// only relosves files that exists within the users machine
+// if it returns an error the calling function should unwrap the error and call the resolveOnlineDependency or abort funtion depending on the error
+func resolveLocalDependency(dependencyName string) (string, error) {
 
 	var foundPath string
+	//walk down the file tree from cmd.RootDependency and look for a file named like the parameter, dependencyName
 	err := filepath.WalkDir(cmd.RootDependency, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			wrapped := fmt.Errorf("failed to walk the file path: %w", err)
+			wrapped := fmt.Errorf("failed to look for file: %w", err)
 			return wrapped
 		}
 		if d.Name() == dependencyName {
@@ -65,9 +91,10 @@ func resolveDependency(dependencyName string) (string, error) {
 	if err != nil && err.Error() != "found file" {
 		return "", err
 	}
+	//****unwrap failed to look for file error and handle it appropriately
 
 	if foundPath == "" {
-		return "", fmt.Errorf("dependency %s not found", dependencyName)
+		return "", fmt.Errorf("%s is not a local dependency", dependencyName)
 	}
 
 	absolutePath, err := filepath.Rel(cmd.RootDependency, foundPath)
@@ -96,7 +123,7 @@ func Parse(file string) ([]string, error) {
 		if ok {
 			continue
 		}
-		resolved, err := resolveDependency(dependencyName)
+		resolved, err := resolveLocalDependency(dependencyName)
 		if err != nil {
 			return []string{}, err
 		}
