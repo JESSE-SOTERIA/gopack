@@ -3,8 +3,8 @@ package parse
 import (
 	"bufio"
 	"fmt"
-	"fs"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -73,23 +73,29 @@ func (f *FoundError) Error() string {
 // if it returns an error the calling function should unwrap the error and call the resolveOnlineDependency or abort funtion depending on the error
 func resolveLocalDependency(dependencyName string) (string, error) {
 
+	//verify if rootDependency is a valid filepath in the users system
+	_, rootErr := os.Stat(cmd.RootDependency)
+	if rootErr != nil {
+		wrapped := fmt.Errorf("Dependency Root does not Exist! :w", rootErr)
+		return "", wrapped
+	}
 	var foundPath string
 	//walk down the file tree from cmd.RootDependency and look for a file named like the parameter, dependencyName
-	err := filepath.WalkDir(cmd.RootDependency, func(path string, d fs.DirEntry, err error) error {
+	walkErr := filepath.WalkDir(cmd.RootDependency, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			wrapped := fmt.Errorf("failed to look for file: %w", err)
+			wrapped := fmt.Errorf("failed to look for file in directory %s: %w", path, err)
 			return wrapped
 		}
 		if d.Name() == dependencyName {
 			foundPath = path
 			//signal that the file has been found
-			return &FoundError{}
+			return fs.SkipAll
 		}
 		return nil
 	})
 
-	if err != nil && err.Error() != "found file" {
-		return "", err
+	if walkErr != nil && walkErr != fs.SkipAll {
+		return "", walkErr
 	}
 	//****unwrap failed to look for file error and handle it appropriately
 
@@ -103,7 +109,7 @@ func resolveLocalDependency(dependencyName string) (string, error) {
 		return "", wrapped
 	}
 
-	return filepath.Join(cmd.RootDependency, absolutePath), nil
+	return absolutePath, nil
 }
 
 // parse reads files line by line, checks for dependencies, and resolves them then returns a slice of resolved dependencies in the form of parsed strings.

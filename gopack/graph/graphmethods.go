@@ -19,9 +19,9 @@ func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
 	return false
 }
 
-func (g *Graph) Edge(uid, yid int64) Edge {
+func (g Graph) Edge(uid, vid int64) Edge {
 	node, exists := g.Vertices[uid]
-	node2, exists2 := g.Vertices[yid]
+	node2, exists2 := g.Vertices[vid]
 
 	if exists && exists2 {
 		return g.NewEdge(node, node2)

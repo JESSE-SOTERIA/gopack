@@ -52,8 +52,10 @@ func InitializeGraph(list []string) Graph {
 	var (
 		newGraph Graph
 		newIter  Nodes
+		newIdGen uniqueIdGenerator
 	)
 
+	newGraph.IdGen = newIdGen
 	//loop over the list
 	for i := 0; i < len(list); i++ {
 		newNode := Node{
