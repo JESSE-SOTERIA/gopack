@@ -1,5 +1,6 @@
 package graph
 
+
 // refactor and test
 func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
 	from, exists := g.Vertices[xid]
@@ -79,16 +80,6 @@ func (g *Graph) NewEdge(from, to Node) Edge {
 func (g *Graph) SetEdge(e Edge) {
 	g.Edges = append(g.Edges, e)
 
-}
-
-// the following implement a NodeAdder interface
-// makes a new node with an arbitrary id
-func (g *Graph) NewNode() Node {
-	var newNode Node
-	newNode.Name = ""
-	//(-1) id means its a default node
-	newNode.Id = -1
-	return newNode
 }
 
 // vertices field of the graph type is a map that maps a node id to a single node in the map

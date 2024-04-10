@@ -56,8 +56,10 @@ func InitializeGraph(list []string) Graph {
 	)
 
 	newGraph.IdGen = newIdGen
+	newGraph.AdjacencyList = make(map[Node][]Node)
 	//loop over the list
 	for i := 0; i < len(list); i++ {
+		newGraph.Vertices = make(map[int64]Node)
 		newNode := Node{
 			graph: &newGraph,
 			Name:  list[i],

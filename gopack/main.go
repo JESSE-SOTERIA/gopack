@@ -5,7 +5,6 @@ import (
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"github.com/JESSE-SOTERIA/gopack/graph"
 	"github.com/JESSE-SOTERIA/gopack/parse"
-	"gonum.org/v1/gonum/graph/topo"
 	"log"
 	"os"
 )
@@ -53,8 +52,7 @@ func main() {
 		var neighbourNodes []graph.Node
 		var newEdges []graph.Edge
 		for _, name := range list {
-			newNode := projectGraph.NewNode()
-			newNode.Name = name
+			newNode := projectGraph.NewNode(name)
 			newNode.Id = projectGraph.IdGen.GetId()
 			//make edge between each node and each neighbour
 			newEdges = append(newEdges, projectGraph.NewEdge(val, newNode))
@@ -66,6 +64,13 @@ func main() {
 	}
 
 	//call topo, then transitive reduction
-	topo.Sort(projectGraph)
+	exists, cycle := graph.DetectCycle(projectGraph)
+	if exists {
+		log.Fatal("Detected a cycle of dependencies", cycle)
+	}
+	entry := projectGraph.NewNode(cmd.EntryFiles[0])
+	//order wil lbe used to generate the bundle and output
+	order := graph.TopoSortDFS(projectGraph, entry)
+	fmt.Println(order, "successfully built topo!!!")
 
 }

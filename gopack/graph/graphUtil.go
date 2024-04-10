@@ -70,6 +70,14 @@ func TopoSortDFS(graph Graph, start Node) map[Node]int {
 	return order
 }
 
+func (g *Graph) NewNode(name string) Node {
+	var newNode Node
+	newNode.Name = name
+	//(-1) id means its a default node
+	newNode.Id = -1
+	return newNode
+}
+
 func TransitiveReduce() {
 
 }

@@ -68,8 +68,7 @@ func isValidArg(arg string) bool {
 func validateFlags(entry []string, out string) bool {
 	//check the lengthof the entry slice
 	if len(entry) < 1 {
-		fmt.Println("please provide atleast one entry file")
-		return false
+		panic("program terminated because no entryfiles were provided!")
 	}
 
 	for i := 0; i < len(entry); i++ {

@@ -2,10 +2,12 @@ package parse
 
 import (
 	"bufio"
+	//"errors"
 	"fmt"
 	"github.com/JESSE-SOTERIA/gopack/cmd/cmd"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -18,21 +20,7 @@ import (
 func checkDependency(line string) (string, bool) {
 
 	//checks the dependency of a file based on the import or require  string
-	if strings.Contains(line, "import") {
-		//checks if the line contains "
-		//TODO: add support for single quote imports
-		start := strings.Index(line, `"`)
-		if start == -1 {
-			return "", false
-		}
-		end := strings.Index(line[start+1:], `"`)
-		//make sure there is no syntax error
-		if end == -1 {
-			return "", false
-		}
-		return line[start+1 : start+1+end], true
-	}
-	if strings.Contains(line, "require()") {
+	if strings.Contains(line, "require") || strings.Contains(line, "import") {
 		//checks the contents of the requre
 		//handles both single and double quotes
 		start := strings.Index(line, `"`)
@@ -76,7 +64,7 @@ func resolveLocalDependency(dependencyName string) (string, error) {
 	//verify if rootDependency is a valid filepath in the users system
 	_, rootErr := os.Stat(cmd.RootDependency)
 	if rootErr != nil {
-		wrapped := fmt.Errorf("Dependency Root does not Exist! :w", rootErr)
+		wrapped := fmt.Errorf("Dependency Root does not Exist! %:w", rootErr)
 		return "", wrapped
 	}
 	var foundPath string
@@ -100,10 +88,17 @@ func resolveLocalDependency(dependencyName string) (string, error) {
 	//****unwrap failed to look for file error and handle it appropriately
 
 	if foundPath == "" {
-		return "", fmt.Errorf("%s is not a local dependency", dependencyName)
+		//this should trigger downloading dependencies using the package manager of choice
+		fmt.Printf(dependencyName, "%s is not a local dependency.", dependencyName)
+		//return "", errors.New("failed: invalid dependency")
+		installWithNpm()
+		return "installed with npm", nil
 	}
 
+	//combine the path of the dependency to the path of the root dependency directory
+
 	absolutePath, err := filepath.Rel(cmd.RootDependency, foundPath)
+	fmt.Println(absolutePath, err)
 	if err != nil {
 		wrapped := fmt.Errorf("cant make the filepath relative: %w", err)
 		return "", wrapped
@@ -112,12 +107,41 @@ func resolveLocalDependency(dependencyName string) (string, error) {
 	return absolutePath, nil
 }
 
+// to be used when intergrating online module resolution
+func installWithNpm() bool {
+	cmd := exec.Command("npm", "install")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	fmt.Println("installling online dependencies...")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("there has been an error installing remote dependencies:", err)
+		os.Exit(1)
+	}
+	return true
+
+}
+func installWithYarn() bool {
+	cmd := exec.Command("yarn", "install")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	fmt.Println("installling online dependencies...")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("there was an error installing remote dependencies")
+		os.Exit(1)
+	}
+	return true
+}
+
 // parse reads files line by line, checks for dependencies, and resolves them then returns a slice of resolved dependencies in the form of parsed strings.
 func Parse(file string) ([]string, error) {
 	var parsedStrings []string
 	buf, err := os.Open(file)
 	if err != nil {
-		wrapped := fmt.Errorf("failed to open %s: %w", err)
+		wrapped := fmt.Errorf("failed to open %s: %w", file, err)
 		return []string{}, wrapped
 	}
 
@@ -126,6 +150,7 @@ func Parse(file string) ([]string, error) {
 
 	for scanner.Scan() {
 		dependencyName, ok := checkDependency(scanner.Text())
+		var installedNpm bool
 		if ok {
 			continue
 		}
@@ -133,7 +158,14 @@ func Parse(file string) ([]string, error) {
 		if err != nil {
 			return []string{}, err
 		}
+		if resolved == "installed with npm" {
+			installedNpm = true
+			resolved, _ = resolveLocalDependency(dependencyName)
+		}
 		parsedStrings = append(parsedStrings, resolved)
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("Error while scanning files:%w", err)
 	}
 	return parsedStrings, nil
 
